@@ -1,5 +1,5 @@
 // 从react源码中获取工具方法和变量
-import hasOwnProperty from 'shared/hasOwnProperty.js'
+import hasOwnProperty from 'shared/hasOwnProperty'
 import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols'
 
 const RESERVED_PROPS = {

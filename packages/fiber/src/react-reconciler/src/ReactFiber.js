@@ -17,6 +17,7 @@ export function FiberNode(tag, pendingProps, key) {
     this.return = null; // 指向父节点
     this.child = null;  // 指向第一个子节点
     this.sibling = null; // 指向弟节点
+    this.index = 0; // 索引初始为0
 
     // 虚拟DOM提供pendingProps用于创建fiber节点的属性
     this.pendingProps = pendingProps; // 等待生效的属性
@@ -48,4 +49,35 @@ export function createFiber(tag, pendingProps, key) {
 
 export function createHostRootFiber() {
     return createFiber(HostRoot, null, null);
+}
+
+/**
+ * 基于老fiber和新属性创建新的fiber
+ * @param current 老fiber
+ * @param pendingProps 新属性
+ */
+export function createWorkInProgress(current, pendingProps) {
+    let workInProgress = current.alternate;
+    // 首次渲染时为null
+    if (workInProgress === null) {
+        workInProgress = createFiber(current.tag, pendingProps, current.key)
+        workInProgress.type = current.type;
+        workInProgress.stateNode = current.stateNode;
+        // 双向指针
+        workInProgress.alternate = current;
+        current.alternate = workInProgress
+    } else {
+        workInProgress.pendingProps = pendingProps;
+        workInProgress.type = current.type;
+        // 副作用清空
+        workInProgress.flags = NoFlags;
+        workInProgress.subtreeFlags = NoFlags;
+    }
+    workInProgress.child = current.child;
+    workInProgress.sibling = current.sibling;
+    workInProgress.index = current.index;
+    workInProgress.memoizedProps = current.memoizedProps;
+    workInProgress.memoizedState = current.memoizedState;
+    workInProgress.updateQueue = current.updateQueue;
+    return workInProgress;
 }

@@ -1,5 +1,6 @@
 import { createFiberRoot } from "./ReactFiberRoot";
 import { createUpdate, enqueueUpdate } from "./ReactFiberClassUpdateQueue";
+import { scheduleUpdateOnFiber } from "./ReactFiberWorkLoop";
 
 export function createContainer(containerInfo) {
     return createFiberRoot(containerInfo);
@@ -19,5 +20,5 @@ export function updateContainer(element, container) {
     update.payload = { element };
     // 添加至current根Fiber的更新队列
     const root = enqueueUpdate(current, update);
-    console.log(root);
+    scheduleUpdateOnFiber(root);
 }
