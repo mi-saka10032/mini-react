@@ -1,5 +1,5 @@
 import { createFiberRoot } from "./ReactFiberRoot";
-import { createUpdate, enqueueUpdate } from './ReactFiberClassUpdateQueue'
+import { createUpdate, enqueueUpdate } from "./ReactFiberClassUpdateQueue";
 
 export function createContainer(containerInfo) {
     return createFiberRoot(containerInfo);
@@ -18,5 +18,6 @@ export function updateContainer(element, container) {
     // 要更新的虚拟DOM
     update.payload = { element };
     // 添加至current根Fiber的更新队列
-    enqueueUpdate(current, update);
+    const root = enqueueUpdate(current, update);
+    console.log(root);
 }

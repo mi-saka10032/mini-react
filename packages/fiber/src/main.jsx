@@ -7,4 +7,5 @@ const element = (
 )
 
 const root = createRoot(document.getElementById('root'))
-console.log(root);
+// 把element虚拟DOM挂载到容器中
+root.render(element)

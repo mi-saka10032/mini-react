@@ -5,8 +5,6 @@ function FiberRootNode(containerInfo) {
     this.containerInfo = containerInfo;
 }
 
-
-
 export function createFiberRoot(containerInfo) {
     const root = new FiberRootNode(containerInfo);
     // HostRoot指的是根节点div#root
