@@ -30,7 +30,6 @@ function performConcurrentWorkOnRoot(root) {
 
 function prepareFreshStack(root) {
     workInProgress = createWorkInProgress(root.current, null);
-    console.log(workInProgress);
 }
 
 function renderRootSync(root) {
@@ -50,6 +49,10 @@ function workLoopSync() {
     }
 }
 
+/**
+ * 执行一个工作单元
+ * @param unitOfWork
+ */
 function performUnitOfWork(unitOfWork) {
     // 获取新fiber对应的老fiber，是页面上显示的current的fiber
     const current = unitOfWork.alternate;

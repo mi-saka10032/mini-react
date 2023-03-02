@@ -1,4 +1,4 @@
-import { HostRoot } from "./ReactWorkTags";
+import { HostComponent, HostRoot, IndeterminateComponent } from "./ReactWorkTags";
 import { NoFlags } from "./ReactFiberFlags";
 
 /**
@@ -60,12 +60,12 @@ export function createWorkInProgress(current, pendingProps) {
     let workInProgress = current.alternate;
     // 首次渲染时为null
     if (workInProgress === null) {
-        workInProgress = createFiber(current.tag, pendingProps, current.key)
+        workInProgress = createFiber(current.tag, pendingProps, current.key);
         workInProgress.type = current.type;
         workInProgress.stateNode = current.stateNode;
         // 双向指针
         workInProgress.alternate = current;
-        current.alternate = workInProgress
+        current.alternate = workInProgress;
     } else {
         workInProgress.pendingProps = pendingProps;
         workInProgress.type = current.type;
@@ -80,4 +80,24 @@ export function createWorkInProgress(current, pendingProps) {
     workInProgress.memoizedState = current.memoizedState;
     workInProgress.updateQueue = current.updateQueue;
     return workInProgress;
+}
+
+/**
+ * 根据虚拟DOM，创建Fiber节点
+ * @param element
+ */
+export function createFiberFromElement(element) {
+    const { type, key, pendingProps } = element;
+    return createFiberFromTypeAndProps(type, key, pendingProps);
+}
+
+function createFiberFromTypeAndProps(type, key, pendingProps) {
+    let tag = IndeterminateComponent;
+    if (typeof type === "string") {
+        // type为字符串，说明是原生组件，div p span
+        tag = HostComponent;
+    }
+    const fiber = createFiber(tag, pendingProps, key);
+    fiber.type = type;
+    return fiber;
 }
