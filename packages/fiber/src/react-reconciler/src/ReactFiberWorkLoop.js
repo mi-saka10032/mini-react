@@ -1,6 +1,7 @@
 import { scheduleCallback } from "scheduler/index";
 import { createWorkInProgress } from "./ReactFiber";
 import { beginWork } from "./ReactFiberBeginWork";
+import { completeWork } from "./ReactFiberCompleteWork";
 
 let workInProgress = null;
 
@@ -62,8 +63,34 @@ function performUnitOfWork(unitOfWork) {
     unitOfWork.memoizedProps = unitOfWork.pendingProps;
     // 没有子节点，表示工作单元递归的 递 阶段已结束，需要return执行completeWork
     if (next === null) {
-        workInProgress = null;
+        // 没有子节点，表示当前fiber的beginWork已经完成，执行completeWork
+        completeUnitOfWork(unitOfWork);
     } else {
         workInProgress = next;
     }
+}
+
+function completeUnitOfWork(unitOfWork) {
+    let completedWork = unitOfWork;
+    do {
+        // 替代fiber
+        const current = completedWork.alternate;
+        // 父fiber
+        const returnFiber = completedWork.return;
+        // 执行此fiber的完成工作
+        // 如果是原生组件，就是创建真实DOM节点
+        completeWork(current, completedWork);
+        // 如果有弟弟，构建弟弟对应的fiber子链表
+        const siblingFiber = completedWork.sibling;
+        if (siblingFiber !== null) {
+            // 如果存在兄弟节点，则workInProgress赋值兄弟节点，循环退出
+            workInProgress = siblingFiber;
+            return;
+        }
+        // 如果没有弟弟，说明这当前完成的就是父fiber的最后一个节点
+        // 也就是说一个父fiber，所有的子fiber全部完成了
+        completedWork = returnFiber;
+        workInProgress = completedWork;
+        // 执行递归的 归阶段，当兄弟节点不为空的时候不断执行while循环，没有兄弟节点时退出循环
+    } while (completedWork !== null);
 }

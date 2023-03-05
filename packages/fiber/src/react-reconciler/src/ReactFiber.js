@@ -1,4 +1,4 @@
-import { HostComponent, HostRoot, IndeterminateComponent } from "./ReactWorkTags";
+import { HostComponent, HostRoot, HostText, IndeterminateComponent } from "./ReactWorkTags";
 import { NoFlags } from "./ReactFiberFlags";
 
 /**
@@ -87,7 +87,7 @@ export function createWorkInProgress(current, pendingProps) {
  * @param element
  */
 export function createFiberFromElement(element) {
-    const { type, key, pendingProps } = element;
+    const { type, key, props: pendingProps } = element;
     return createFiberFromTypeAndProps(type, key, pendingProps);
 }
 
@@ -100,4 +100,8 @@ function createFiberFromTypeAndProps(type, key, pendingProps) {
     const fiber = createFiber(tag, pendingProps, key);
     fiber.type = type;
     return fiber;
+}
+
+export function createFiberFromText(content) {
+    return createFiber(HostText, content, null);
 }
