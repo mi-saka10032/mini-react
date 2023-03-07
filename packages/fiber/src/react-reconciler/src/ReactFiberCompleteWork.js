@@ -16,7 +16,22 @@ import { NoFlags } from "react-reconciler/src/ReactFiberFlags";
 function appendAllChildren(parent, workInProgress) {
     let node = workInProgress.child;
     while (node) {
-        appendInitialChild(parent, node.stateNode);
+        if (node.tag === HostComponent || node.tag === HostText) {
+            // 如果子节点是原生节点或文本节点
+            appendInitialChild(parent, node.stateNode);
+        } else if (node.child !== null) {
+            // 如果第一个儿子不是原生节点，说明它可能是一个函数组件节点
+            node = node.child;
+            continue;
+        }
+        // 如果当前的节点没有弟弟
+        while (node.sibling === null) {
+            if (node.return === workInProgress) {
+                return;
+            }
+            // 回到父节点
+            node = node.return;
+        }
         node = node.sibling;
     }
 }
@@ -37,9 +52,10 @@ export function completeWork(current, workInProgress) {
             const { type } = workInProgress;
             const instance = createInstance(type, newProps, workInProgress);
             // 把自己所有的儿子都添加到自己身上
-            workInProgress.stateNode = instance;
             appendAllChildren(instance, workInProgress);
-            break
+            workInProgress.stateNode = instance;
+
+            break;
         case HostText:
             // 文本节点的props就是文本内容，直接创建真实的文本节点
             const newText = newProps;
