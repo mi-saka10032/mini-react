@@ -1,3 +1,5 @@
+import { setInitialProperties } from "react-dom/src/client/ReactDOMComponent";
+
 export function shouldSetTextContent(type, props) {
     return typeof props.children === "string" || typeof props.children === "number";
 }
@@ -16,6 +18,6 @@ export function appendInitialChild(parent, child) {
     parent.appendChild(child);
 }
 
-export function finalizeInitialChildren(parent, child) {
-
+export function finalizeInitialChildren(domElement, type, props, hostContext) {
+    setInitialProperties(domElement, type, props);
 }

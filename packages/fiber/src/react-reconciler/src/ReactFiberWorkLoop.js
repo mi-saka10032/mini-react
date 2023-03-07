@@ -27,6 +27,7 @@ function ensureRootIsScheduled(root) {
 function performConcurrentWorkOnRoot(root) {
     // 第一次渲染以同步的方式渲染根节点，初次渲染的时候，都是同步执行
     renderRootSync(root);
+    console.log(root);
 }
 
 function prepareFreshStack(root) {

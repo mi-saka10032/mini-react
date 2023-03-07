@@ -1,5 +1,5 @@
 import logger, { indent } from "shared/logger";
-import { HostComponent, HostText } from "react-reconciler/src/ReactWorkTags";
+import { HostComponent, HostRoot, HostText } from "react-reconciler/src/ReactWorkTags";
 import {
     createInstance,
     createTextInstance,
@@ -26,7 +26,7 @@ function appendAllChildren(parent, workInProgress) {
         }
         // 如果当前的节点没有弟弟
         while (node.sibling === null) {
-            if (node.return === workInProgress) {
+            if (node.return === null || node.return === workInProgress) {
                 return;
             }
             // 回到父节点
@@ -46,6 +46,9 @@ export function completeWork(current, workInProgress) {
     indent.number -= 2;
     const newProps = workInProgress.pendingProps;
     switch (workInProgress.tag) {
+        case HostRoot:
+            bubbleProperties(workInProgress);
+            break;
         case HostComponent:
             // 暂时只处理初次创建或挂载的新节点逻辑
             // 创建真实的DOM节点
@@ -54,7 +57,8 @@ export function completeWork(current, workInProgress) {
             // 把自己所有的儿子都添加到自己身上
             appendAllChildren(instance, workInProgress);
             workInProgress.stateNode = instance;
-
+            finalizeInitialChildren(instance, type, newProps);
+            bubbleProperties(workInProgress);
             break;
         case HostText:
             // 文本节点的props就是文本内容，直接创建真实的文本节点
