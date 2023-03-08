@@ -84,14 +84,14 @@ function completeUnitOfWork(unitOfWork) {
         // 如果有弟弟，构建弟弟对应的fiber子链表
         const siblingFiber = completedWork.sibling;
         if (siblingFiber !== null) {
-            // 如果存在兄弟节点，则workInProgress赋值兄弟节点，循环退出
+            // 如果存在兄弟节点，则workInProgress赋值兄弟节点，循环退出，等待下一次工作单元执行beginWork
             workInProgress = siblingFiber;
             return;
         }
         // 如果没有弟弟，说明这当前完成的就是父fiber的最后一个节点
-        // 也就是说一个父fiber，所有的子fiber全部完成了
+        // 也就是说一个父fiber，它的所有子fiber全部完成了
         completedWork = returnFiber;
         workInProgress = completedWork;
-        // 执行递归的 归阶段，当兄弟节点不为空的时候不断执行while循环，没有兄弟节点时退出循环
+        // 执行递归的 归阶段，当兄弟节点为空的时候执行while循环往上返回，直到根fiber时退出循环
     } while (completedWork !== null);
 }
