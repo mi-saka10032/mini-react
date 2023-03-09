@@ -21,3 +21,7 @@ export function appendInitialChild(parent, child) {
 export function finalizeInitialChildren(domElement, type, props, hostContext) {
     setInitialProperties(domElement, type, props);
 }
+
+export function appendChild(parent, child) {
+    parent.appendChild(child)
+}

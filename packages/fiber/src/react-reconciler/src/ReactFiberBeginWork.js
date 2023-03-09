@@ -58,7 +58,6 @@ function updateHostComponent(current, workInProgress) {
 export function beginWork(current, workInProgress) {
     logger(" ".repeat(indent.number) + "beginWork", workInProgress);
     indent.number += 2;
-    debugger
     switch (workInProgress.tag) {
         case HostRoot:
             return updateHostRoot(current, workInProgress);
