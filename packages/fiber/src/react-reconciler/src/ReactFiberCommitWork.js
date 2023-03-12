@@ -41,7 +41,7 @@ function getHostParentFiber(fiber) {
  * @param node 将要插入的fiber节点
  * @param parent 父真实DOM节点
  */
-function insertNode(node, parent) {
+function insertOrAppendPlacementNode(node, parent) {
     const { tag } = node;
     // 判断此fiber对应的节点是不是真实DOM节点
     const isHost = tag === HostComponent || tag === HostText;
@@ -53,10 +53,10 @@ function insertNode(node, parent) {
         // 如果node不是真实DOM节点，获取它的child
         const { child } = node;
         if (child !== null) {
-            insertNode(parent, child);
+            insertOrAppendPlacementNode(parent, child);
             let { sibling } = child;
             while (sibling !== null) {
-                insertNode(node, parent);
+                insertOrAppendPlacementNode(node, parent);
                 sibling = sibling.sibling;
             }
         }
@@ -72,12 +72,14 @@ function commitPlacement(finishedWork) {
     switch (parentFiber.tag) {
         case HostRoot: {
             const parent = parentFiber.stateNode.containerInfo;
-            insertNode(finishedWork, parent);
+            // 获取最近的真实DOM节点
+            // const before = getHostSibling(); // 获取最近的真实DOM节点
+            insertOrAppendPlacementNode(finishedWork, parent);
             break;
         }
         case HostComponent: {
             const parent = parentFiber.stateNode;
-            insertNode(finishedWork, parent);
+            insertOrAppendPlacementNode(finishedWork, parent);
             break;
         }
     }
