@@ -25,3 +25,7 @@ export function finalizeInitialChildren(domElement, type, props, hostContext) {
 export function appendChild(parent, child) {
     parent.appendChild(child)
 }
+
+export function insertBefore(parentInstance, child, beforeChild) {
+    parentInstance.insertBefore(child, beforeChild)
+}
