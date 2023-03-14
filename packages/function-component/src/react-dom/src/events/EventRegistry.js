@@ -2,6 +2,8 @@ export const allNativeEvents = new Set();
 
 /**
  * 注册两个阶段的事件名
+ * 当页面中触发事件的时候，会走事件处理函数
+ * 事件处理函数需要找到DOM元素对应要执行的React事件，onClick、onClickCapture等
  * @param registrationName React事件名
  * @param dependencies 原生事件数组[click]
  */
