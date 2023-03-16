@@ -1,8 +1,9 @@
 import { allNativeEvents } from "./EventRegistry";
 import * as SimpleEventPlugin from "./plugins/SimpleEventPlugin";
 import { IS_CAPTURE_PHASE } from "./EventSystemFlags";
-import { createEventListenerWrapperWithPriority } from './ReactDOMEventListener'
-import { addEventCaptureListener, addEventBubbleListener } from './EventListener'
+import { createEventListenerWrapperWithPriority } from "./ReactDOMEventListener";
+import { addEventCaptureListener, addEventBubbleListener } from "./EventListener";
+import { getEventTarget } from "react-dom/src/events/getEventTarget";
 
 SimpleEventPlugin.registerEvents();
 const listeningMarker = `_reactListening` + Math.random().toString(36).slice(2);
@@ -41,3 +42,11 @@ function addTrappedEventListener(targetContainer, domEventName, eventSystemFlags
     }
 }
 
+export function dispatchEventForPluginEventSystem(domEventName, eventSystemFlags, nativeEvent, targetInst, targetContainer) {
+    dispatchEventForPlugins(domEventName, eventSystemFlags, nativeEvent, targetInst, targetContainer);
+}
+
+function dispatchEventForPlugins(domEventName, eventSystemFlags, nativeEvent, targetInst, targetContainer) {
+    const nativeEventTarget = getEventTarget(nativeEvent);
+    const dispatchQueue = [];
+}
