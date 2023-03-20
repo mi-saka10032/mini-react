@@ -18,3 +18,11 @@ export function getClosestInstanceFromNode(targetNode) {
 export function precacheFiberNode(hostInst, node) {
     node[internalInstanceKey] = hostInst;
 }
+
+export function updateFiberProps(node, props) {
+    node[internalInstanceKey] = props;
+}
+
+export function getFiberCurrentPropsFromNode(node) {
+    return node[internalInstanceKey] || null;
+}
