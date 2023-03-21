@@ -40,7 +40,7 @@ function createSyntheticEvent(inter) {
         // 是否已阻止默认事件
         this.isDefaultPrevented = functionThatReturnsFalse;
         // 是否已阻止继续传播
-        this.isPropagationStopped = functionThatReturnsTrue;
+        this.isPropagationStopped = functionThatReturnsFalse;
         return this;
     }
     assign(SyntheticBaseEvent.prototype, {

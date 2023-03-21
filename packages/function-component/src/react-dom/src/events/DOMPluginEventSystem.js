@@ -6,7 +6,7 @@ import { addEventCaptureListener, addEventBubbleListener } from "./EventListener
 import { getEventTarget } from "react-dom/src/events/getEventTarget";
 import { HostComponent } from "react-reconciler/src/ReactWorkTags";
 import getListener from "./getListener";
-debugger
+
 SimpleEventPlugin.registerEvents();
 const listeningMarker = `_reactListening` + Math.random().toString(36).slice(2);
 
@@ -61,7 +61,53 @@ function dispatchEventForPlugins(domEventName, eventSystemFlags, nativeEvent, ta
         eventSystemFlags,
         targetContainer,
     );
-    console.log("dispatchQueue", dispatchQueue);
+    // processDispatchQueue 处理派发事件
+    processDispatchQueue(dispatchQueue, eventSystemFlags);
+}
+
+function processDispatchQueue(dispatchQueue, eventSystemFlags) {
+    // 判断是否捕获阶段
+    const inCapturePhase = (eventSystemFlags & IS_CAPTURE_PHASE) !== 0;
+    // 循环派发队列
+    for (let i = 0; i <= dispatchQueue.length - 1; i++) {
+        const { event, listeners } = dispatchQueue[i];
+        processDispatchQueueItemsInOrder(event, listeners, inCapturePhase);
+    }
+}
+
+/**
+ * 合成事件的实例currentTarget是在不断变化的
+ * event nativeEventTarget指的是原始事件源，永远不变
+ * event currentTarget 当前的事件源，会随着事件回调执行不断变化
+ * @param listener
+ * @param event
+ * @param currentTarget
+ */
+function executeDispatch(listener, event, currentTarget) {
+    event.currentTarget = currentTarget;
+    listener(event);
+}
+
+function processDispatchQueueItemsInOrder(event, dispatchListeners, inCapturePhase) {
+    if (inCapturePhase) {
+        // dispatchListeners[子，父]
+        for (let i = dispatchListeners.length - 1; i >= 0; i--) {
+            const { listener, currentTarget } = dispatchListeners[i];
+            if (event.isPropagationStopped()) {
+                return;
+            }
+            executeDispatch(listener, event, currentTarget);
+        }
+    } else {
+        // dispatchListeners[父，子]
+        for (let i = 0; i <= dispatchListeners.length - 1; i++) {
+            const { listener, currentTarget } = dispatchListeners[i];
+            if (event.isPropagationStopped()) {
+                return;
+            }
+            executeDispatch(listener, event, currentTarget);
+        }
+    }
 }
 
 function extractEvents(
@@ -94,10 +140,14 @@ export function accumulateSinglePhaseListeners(targetFiber, reactName, nativeEve
         if (tag === HostComponent && stateNode !== null) {
             const listener = getListener(instance, reactEventName);
             if (listener) {
-                listeners.push(listener);
+                listeners.push(createDispatchListener(instance, listener, stateNode));
             }
         }
         instance = instance.return;
     }
     return listeners;
+}
+
+function createDispatchListener(instance, listener, currentTarget) {
+    return { instance, listener, currentTarget };
 }
