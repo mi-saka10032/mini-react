@@ -6,7 +6,7 @@ import { addEventCaptureListener, addEventBubbleListener } from "./EventListener
 import { getEventTarget } from "react-dom/src/events/getEventTarget";
 import { HostComponent } from "react-reconciler/src/ReactWorkTags";
 import getListener from "./getListener";
-
+debugger
 SimpleEventPlugin.registerEvents();
 const listeningMarker = `_reactListening` + Math.random().toString(36).slice(2);
 
