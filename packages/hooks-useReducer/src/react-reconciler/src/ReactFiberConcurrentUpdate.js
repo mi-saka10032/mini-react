@@ -11,7 +11,7 @@ export function finishQueueingConcurrentUpdates() {
         const fiber = concurrentQueue[i++];
         const queue = concurrentQueue[i++];
         const update = concurrentQueue[i++];
-        debugger
+        // 对于同一个useReducer调动的派发队列任务，queue队列对象为同一个，以下为单向循环链表的拆剪与追加操作
         if (queue !== null && update !== null) {
             const pending = queue.pending;
             if (pending === null) {

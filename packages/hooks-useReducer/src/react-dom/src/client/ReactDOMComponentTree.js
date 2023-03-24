@@ -8,7 +8,7 @@ const internalPropsKey = "__reactProps$" + randomKey;
  */
 export function getClosestInstanceFromNode(targetNode) {
     const targetInst = targetNode[internalInstanceKey];
-    return targetInst;
+    return targetInst || null;
 }
 
 /**

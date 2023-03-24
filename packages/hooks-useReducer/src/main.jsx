@@ -9,9 +9,9 @@ function reducer(state, action) {
 function FunctionComponent() {
     const [number, setNumber] = React.useReducer(reducer, 0);
     return <button onClick={() => {
-        setNumber({ type: "add", payload: 1 });
-        setNumber({ type: "add", payload: 2 });
-        setNumber({ type: "add", payload: 3 });
+        setNumber({ type: "add", payload: 1 }); // update1 => update2 => update3 => update1
+        setNumber({ type: "add", payload: 2 }); // update2
+        setNumber({ type: "add", payload: 3 }); // update3
     }}>{number}</button>;
 }
 
