@@ -1,13 +1,14 @@
 import * as React from "react/index";
 import { createRoot } from "react-dom/client";
 
-function reducer(state, action) {
+function counter(state, action) {
     if (action.type === "add") return state + 1;
     return state;
 }
 
 function FunctionComponent() {
-    const [number, setNumber] = React.useReducer(reducer, 0);
+    const [number, setNumber] = React.useReducer(counter, 1);
+    const [number2, setNumber2] = React.useReducer(counter, 2);
     return <button onClick={() => {
         setNumber({ type: "add", payload: 1 }); // update1 => update2 => update3 => update1
         setNumber({ type: "add", payload: 2 }); // update2
