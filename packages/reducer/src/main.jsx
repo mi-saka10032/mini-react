@@ -2,17 +2,18 @@ import * as React from "react/index";
 import { createRoot } from "react-dom/client";
 
 const reducer = (state, action) => {
-    if (action.type === "add") return state + 1;
+    if (action.type === "add") return state + action.payload;
     return state;
 };
 
 function FunctionComponent() {
     const [number, setNumber] = React.useReducer(reducer, 0);
-    return (<button onClick={() => {
-        setNumber({ type: "add" });
-        setNumber({ type: "add" });
-        setNumber({ type: "add" });
-    }}>{number}</button>);
+    let attrs = { id: "btn1" };
+    if (number === 6) {
+        delete attrs.id;
+        attrs.style = { color: "red" };
+    }
+    return (<button {...attrs} onClick={() => setNumber({ type: "add", payload: 3 })}>{number}</button>);
 }
 
 const element = <FunctionComponent/>;

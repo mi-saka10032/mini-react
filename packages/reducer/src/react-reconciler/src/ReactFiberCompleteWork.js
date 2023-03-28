@@ -1,5 +1,5 @@
 import logger, { indent } from "shared/logger";
-import { HostComponent, HostRoot, HostText } from "react-reconciler/src/ReactWorkTags";
+import { FunctionComponent, HostComponent, HostRoot, HostText } from "react-reconciler/src/ReactWorkTags";
 import {
     createInstance,
     createTextInstance,
@@ -96,6 +96,10 @@ export function completeWork(current, workInProgress) {
                 workInProgress.stateNode = instance;
                 finalizeInitialChildren(instance, type, newProps);
             }
+            bubbleProperties(workInProgress);
+            break;
+        }
+        case FunctionComponent: {
             bubbleProperties(workInProgress);
             break;
         }

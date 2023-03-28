@@ -1,6 +1,6 @@
 export function setValueForProperty(node, name, value) {
     if (value === null) {
-        node.removeAttributeNode(name);
+        node.removeAttribute(name);
     } else {
         node.setAttribute(name, value);
     }
