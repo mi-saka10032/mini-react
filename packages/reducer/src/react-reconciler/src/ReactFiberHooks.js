@@ -1,8 +1,11 @@
 import ReactSharedInternals from "shared/ReactSharedInternals";
+import { enqueueConcurrentHookUpdate } from "./ReactFiberConcurrentUpdates";
+import { scheduleUpdateOnFiber } from "./ReactFiberWorkLoop";
 
 const { ReactCurrentDispatcher } = ReactSharedInternals;
 let currentlyRenderingFiber = null;
 let workInProgressHook = null;
+let currentHook = null;
 
 function mountWorkInProgressHook() {
     const hook = {
@@ -19,7 +22,12 @@ function mountWorkInProgressHook() {
 }
 
 function dispatchReducerAction(fiber, queue, action) {
-    console.log("dispatchReducerAction", action);
+    const update = {
+        action,
+        next: null,
+    };
+    const root = enqueueConcurrentHookUpdate(fiber, queue, update);
+    scheduleUpdateOnFiber(root);
 }
 
 const HooksDispatcherOnMountInDEV = {
@@ -38,6 +46,56 @@ function mountReducer(reducer, initialArg) {
     return [hook.memoizedState, dispatch];
 }
 
+// 更新当前fiber的hook链表
+function updateWorkInProgressHook() {
+    if (currentHook === null) {
+        const current = currentlyRenderingFiber.alternate;
+        currentHook = current.memoizedState;
+    } else {
+        currentHook = currentHook.next;
+    }
+    const newHook = {
+        memoizedState: currentHook.memoizedState,
+        queue: currentHook.queue,
+        next: null,
+    };
+    if (workInProgressHook === null) {
+        currentlyRenderingFiber.memoizedState = workInProgressHook = newHook;
+    } else {
+        workInProgressHook = workInProgressHook.next = newHook;
+    }
+    return workInProgressHook;
+}
+
+const HooksDispatcherOnUpdateInDEV = {
+    useReducer: updateReducer,
+};
+
+function updateReducer(reducer) {
+    const hook = updateWorkInProgressHook();
+    const queue = hook.queue;
+    queue.lastRenderedReducer = reducer;
+    const current = currentHook;
+    const pendingQueue = queue.pending;
+    let newState = current.memoizedState;
+    if (pendingQueue !== null) {
+        queue.pending = null;
+        const first = pendingQueue.next;
+        let update = first;
+        do {
+            if (update.hasEagerState) {
+                newState = update.eagerState;
+            } else {
+                const action = update.action;
+                newState = reducer(newState, action);
+            }
+            update = update.next;
+        } while (update !== null && update !== first);
+    }
+    hook.memoizedState = queue.lastRenderedState = newState;
+    return [hook.memoizedState, queue.dispatch];
+}
+
 /**
  * 渲染函数组件
  * @param current 老fiber
@@ -49,11 +107,13 @@ function mountReducer(reducer, initialArg) {
 export function renderWithHooks(current, workInProgress, Component, props) {
     currentlyRenderingFiber = workInProgress;
     if (current !== null && current.memoizedState !== null) {
-        // TODO updateReducer
+        ReactCurrentDispatcher.current = HooksDispatcherOnUpdateInDEV;
     } else {
         ReactCurrentDispatcher.current = HooksDispatcherOnMountInDEV;
     }
     const children = Component(props);
+    workInProgressHook = null;
+    currentHook = null;
     currentlyRenderingFiber = null;
     return children;
 }

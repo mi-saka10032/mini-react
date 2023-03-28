@@ -3,7 +3,8 @@ import { createWorkInProgress } from "./ReactFiber";
 import { beginWork } from "./ReactFiberBeginWork";
 import { completeWork } from "./ReactFiberCompleteWork";
 import { NoFlags, MutationMask } from "react-reconciler/src/ReactFiberFlags";
-import { commitMutationEffectsOnFiber } from './ReactFiberCommitWork'
+import { commitMutationEffectsOnFiber } from "./ReactFiberCommitWork";
+import { finishQueueingConcurrentUpdates } from "./ReactFiberConcurrentUpdates";
 
 let workInProgress = null;
 
@@ -48,6 +49,7 @@ function commitRoot(root) {
 
 function prepareFreshStack(root) {
     workInProgress = createWorkInProgress(root.current, null);
+    finishQueueingConcurrentUpdates();
 }
 
 function renderRootSync(root) {

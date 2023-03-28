@@ -1,4 +1,4 @@
-import { setInitialProperties } from "react-dom/src/client/ReactDOMComponent";
+import { setInitialProperties, diffProperties } from "react-dom/src/client/ReactDOMComponent";
 import { precacheFiberNode, updateFiberProps } from "react-dom/src/client/ReactDOMComponentTree";
 
 export function shouldSetTextContent(type, props) {
@@ -34,9 +34,13 @@ export function finalizeInitialChildren(domElement, type, props, hostContext) {
 }
 
 export function appendChild(parent, child) {
-    parent.appendChild(child)
+    parent.appendChild(child);
 }
 
 export function insertBefore(parentInstance, child, beforeChild) {
-    parentInstance.insertBefore(child, beforeChild)
+    parentInstance.insertBefore(child, beforeChild);
+}
+
+export function prepareUpdate(domElement, type, oldProps, newProps) {
+    return diffProperties(domElement, type, oldProps, newProps);
 }

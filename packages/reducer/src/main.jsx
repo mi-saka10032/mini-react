@@ -8,7 +8,11 @@ const reducer = (state, action) => {
 
 function FunctionComponent() {
     const [number, setNumber] = React.useReducer(reducer, 0);
-    return (<button onClick={() => setNumber({ type: "add" })}>{number}</button>);
+    return (<button onClick={() => {
+        setNumber({ type: "add" });
+        setNumber({ type: "add" });
+        setNumber({ type: "add" });
+    }}>{number}</button>);
 }
 
 const element = <FunctionComponent/>;
