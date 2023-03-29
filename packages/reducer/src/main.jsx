@@ -7,13 +7,17 @@ const reducer = (state, action) => {
 };
 
 function FunctionComponent() {
-    const [number, setNumber] = React.useReducer(reducer, 0);
+    const [number1, setNumber1] = React.useReducer(reducer, 0);
+    const [number2, setNumber2] = React.useReducer(reducer, 0);
     let attrs = { id: "btn1" };
-    if (number === 6) {
+    if (number1 === 6) {
         delete attrs.id;
         attrs.style = { color: "red" };
     }
-    return (<button {...attrs} onClick={() => setNumber({ type: "add", payload: 3 })}>{number}</button>);
+    return (<button {...attrs} onClick={() => {
+        setNumber1({ type: "add", payload: 3 })
+        setNumber2({ type: "add", payload: 2 })
+    }}>{number1 + number2}</button>);
 }
 
 const element = <FunctionComponent/>;
