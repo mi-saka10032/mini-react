@@ -1,6 +1,7 @@
 import ReactSharedInternals from "shared/ReactSharedInternals";
 import { enqueueConcurrentHookUpdate } from "./ReactFiberConcurrentUpdates";
 import { scheduleUpdateOnFiber } from "./ReactFiberWorkLoop";
+import is from "shared/objectIs";
 
 const { ReactCurrentDispatcher } = ReactSharedInternals;
 let currentlyRenderingFiber = null;
@@ -30,9 +31,44 @@ function dispatchReducerAction(fiber, queue, action) {
     scheduleUpdateOnFiber(root);
 }
 
+function dispatchSetState(fiber, queue, action) {
+    const update = {
+        action,
+        hasEagerState: false, // 是否有急切的更新
+        eagerState: null, // 急切的更新状态
+        next: null,
+    };
+    // 派发动作后，立刻用上一次的状态和上一次的reducer计算新状态
+    const { lastRenderedReducer, lastRenderedState } = queue;
+    const eagerState = lastRenderedReducer(lastRenderedState, action);
+    update.hasEagerState = true;
+    update.eagerState = eagerState;
+    if (is(eagerState, lastRenderedState)) {
+        return;
+    }
+    // 入队更新，调度更新逻辑
+    const root = enqueueConcurrentHookUpdate(fiber, queue, update);
+    scheduleUpdateOnFiber(root);
+}
+
 const HooksDispatcherOnMountInDEV = {
     useReducer: mountReducer,
+    useState: mountState,
 };
+
+function mountState(initialState) {
+    const hook = mountWorkInProgressHook();
+    hook.memoizedState = initialState;
+    const queue = {
+        pending: null,
+        dispatch: null,
+        lastRenderedReducer: baseStateReducer, // 上一个reducer
+        lastRenderedState: initialState, // 上一个state
+    };
+    hook.queue = queue;
+    const dispatch = (queue.dispatch = dispatchSetState.bind(null, currentlyRenderingFiber, queue));
+    return [hook.memoizedState, dispatch];
+}
 
 function mountReducer(reducer, initialArg) {
     const hook = mountWorkInProgressHook();
@@ -69,7 +105,17 @@ function updateWorkInProgressHook() {
 
 const HooksDispatcherOnUpdateInDEV = {
     useReducer: updateReducer,
+    useState: updateState,
 };
+
+// useState就是一个内置了reducer的useReducer
+function baseStateReducer(state, action) {
+    return typeof action === "function" ? action(state) : action;
+}
+
+function updateState() {
+    return updateReducer(baseStateReducer);
+}
 
 function updateReducer(reducer) {
     const hook = updateWorkInProgressHook();

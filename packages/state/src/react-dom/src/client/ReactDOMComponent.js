@@ -103,7 +103,6 @@ export function updateProperties(domElement, updatePayload) {
 }
 
 function updateDOMProperties(domElement, updatePayload) {
-    console.log(updatePayload);
     for (let i = 0; i < updatePayload.length; i+=2) {
         const propKey = updatePayload[i];
         const propValue = updatePayload[i + 1];

@@ -86,7 +86,6 @@ export function completeWork(current, workInProgress) {
             const { type } = workInProgress;
             if (current !== null && workInProgress.stateNode !== null) {
                 updateHostComponent(current, workInProgress, type, newProps);
-                console.log("updatePayload", workInProgress.updateQueue);
             } else {
                 // 暂时只处理初次创建或挂载的新节点逻辑
                 // 创建真实的DOM节点
