@@ -2,9 +2,10 @@ import { scheduleCallback } from "scheduler/index";
 import { createWorkInProgress } from "./ReactFiber";
 import { beginWork } from "./ReactFiberBeginWork";
 import { completeWork } from "./ReactFiberCompleteWork";
-import { NoFlags, MutationMask } from "react-reconciler/src/ReactFiberFlags";
+import { NoFlags, MutationMask, Placement, Update, ChildDeletion } from "react-reconciler/src/ReactFiberFlags";
 import { commitMutationEffectsOnFiber } from "./ReactFiberCommitWork";
 import { finishQueueingConcurrentUpdates } from "./ReactFiberConcurrentUpdates";
+import { FunctionComponent, HostComponent, HostRoot, HostText } from "react-reconciler/src/ReactWorkTags";
 
 let workInProgress = null;
 
@@ -38,6 +39,8 @@ function performConcurrentWorkOnRoot(root) {
 
 function commitRoot(root) {
     const { finishedWork } = root;
+    printFinishedWork(finishedWork);
+    console.log("~~~~~~~~~~~~~~~~~~~");
     const subtreeHasEffects = (finishedWork.subtreeFlags && MutationMask) !== NoFlags;
     const rootHasEffect = (finishedWork.flags && MutationMask) !== NoFlags;
     if (subtreeHasEffects || rootHasEffect) {
@@ -112,4 +115,46 @@ function completeUnitOfWork(unitOfWork) {
         workInProgress = completedWork;
         // 执行递归的 归阶段，当兄弟节点为空的时候执行while循环往上返回，直到根fiber时退出循环
     } while (completedWork !== null);
+}
+
+function printFinishedWork(fiber) {
+    const { flags, deletions } = fiber;
+    if ((flags & ChildDeletion) !== NoFlags) {
+        fiber.flags &= (~ChildDeletion);
+        console.log("子节点有删除" + deletions.map(fiber => `${fiber.type}#${fiber.memoizedProps.id}`).join(","));
+    }
+    let child = fiber.child;
+    while (child) {
+        printFinishedWork(child);
+        child = child.sibling;
+    }
+    if (fiber.flags !== NoFlags) {
+        console.log(getFlags(fiber), getTag(fiber.tag), typeof fiber.type === 'function' ? fiber.type.name : fiber.type, fiber.memoizedProps);
+    }
+}
+
+function getFlags(fiber) {
+    const { flags, deletions } = fiber;
+    if (flags === Placement) {
+        return "插入";
+    }
+    if (flags === Update) {
+        return "更新";
+    }
+    return flags;
+}
+
+function getTag(tag) {
+    switch (tag) {
+        case FunctionComponent:
+            return "FunctionComponent";
+        case HostRoot:
+            return "HostRoot";
+        case HostComponent:
+            return "HostComponent";
+        case HostText:
+            return "HostText";
+        default:
+            return tag;
+    }
 }

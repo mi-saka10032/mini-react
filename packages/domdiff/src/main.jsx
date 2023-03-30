@@ -3,13 +3,21 @@ import { createRoot } from "react-dom/client";
 
 function FunctionComponent() {
     const [number, setNumber] = React.useState(0);
-    let attrs = { id: "btn1" };
-    if (number === 3) {
-        delete attrs.id;
-        attrs.style = { color: "red" };
-    }
-    // 如果使用的是useState，调用setNumber的时候传入的是老状态，则不需要更新
-    return (<button {...attrs} onClick={() => setNumber(number + 1)}>{number}</button>);
+    return number === 0 ? (
+        <ul key="container" onClick={() => setNumber(number + 1)}>
+            <li key="A">A</li>
+            <li key="B" id="B">
+                B
+            </li>
+            <li key="C">C</li>
+        </ul>
+    ) : (
+        <ul key="container" onClick={() => setNumber(number + 1)}>
+            <li key="B" id="B2">
+                B2
+            </li>
+        </ul>
+    );
 }
 
 const element = <FunctionComponent/>;

@@ -85,7 +85,7 @@ function updateFunctionComponent(current, workInProgress, Component, nextProps) 
  * @param workInProgress 新fiber
  */
 export function beginWork(current, workInProgress) {
-    logger(" ".repeat(indent.number) + "beginWork", workInProgress);
+    // logger(" ".repeat(indent.number) + "beginWork", workInProgress);
     indent.number += 2;
     switch (workInProgress.tag) {
         case IndeterminateComponent:

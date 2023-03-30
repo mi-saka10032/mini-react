@@ -75,7 +75,7 @@ function updateHostComponent(current, workInProgress, type, newProps) {
  * @param workInProgress 新的构建fiber
  */
 export function completeWork(current, workInProgress) {
-    logger(" ".repeat(indent.number) + "completeWork", workInProgress);
+    // logger(" ".repeat(indent.number) + "completeWork", workInProgress);
     indent.number -= 2;
     const newProps = workInProgress.pendingProps;
     switch (workInProgress.tag) {

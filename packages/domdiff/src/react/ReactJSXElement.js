@@ -27,13 +27,13 @@ function ReactElement(type, key, ref, props) {
     }
 }
 
-export function jsxDEV(type, config) {
+export function jsxDEV(type, config, maybeKey) {
     let propName; // 属性名
     const props = {}; // 属性对象
     let key = null; // 可选key，区分父节点下不同子节点
     let ref = null; // 引入，可通过ref获取真实DOM的需求
-    if (hasValidKey(config)) {
-        key = config.key;
+    if (typeof maybeKey !== 'undefined') {
+        key = maybeKey;
     }
     if (hasValidRef(config)) {
         ref = config.ref;

@@ -34,6 +34,8 @@ export function FiberNode(tag, pendingProps, key) {
     this.subtreeFlags = NoFlags;
     // 轮替节点
     this.alternate = null;
+    // 存放将要删除的子Fiber
+    this.deletions = null;
     // We use a double buffering pooling technique because we know that we'll
     // only ever need at most two versions of a tree. We pool the "other" unused
     // node that we're free to reuse.
@@ -72,6 +74,7 @@ export function createWorkInProgress(current, pendingProps) {
         // 副作用清空
         workInProgress.flags = NoFlags;
         workInProgress.subtreeFlags = NoFlags;
+        workInProgress.deletions = null;
     }
     workInProgress.child = current.child;
     workInProgress.sibling = current.sibling;

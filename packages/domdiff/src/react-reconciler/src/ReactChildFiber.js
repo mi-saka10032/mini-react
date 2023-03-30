@@ -28,6 +28,19 @@ function createChildReconciler(shouldTracksSideEffects) {
         }
     }
 
+    // 删除从currentFirstChild之后的所有fiber节点
+    function deleteRemainingChildren(returnFiber, currentFirstChild) {
+        if (!shouldTracksSideEffects) {
+            return null;
+        }
+        let childToDelete = currentFirstChild;
+        while (childToDelete !== null) {
+            deleteChild(returnFiber, childToDelete);
+            childToDelete = childToDelete.sibling;
+        }
+        return null;
+    }
+
     function reconcileSingleElement(returnFiber, currentFirstChild, element) {
         const key = element.key;
         let child = currentFirstChild;
@@ -35,11 +48,17 @@ function createChildReconciler(shouldTracksSideEffects) {
             if (child.key === key) {
                 const elementType = element.type;
                 if (child.type === elementType) {
+                    // key相同且元素类型相同，fiber复用
+                    deleteRemainingChildren(returnFiber, child.sibling);
                     const existing = useFiber(child, element.props);
                     existing.return = returnFiber;
                     return existing;
+                } else {
+                    // key相同但是类型不同，删除剩下的全部fiber.child
+                    deleteRemainingChildren(returnFiber, child);
                 }
             } else {
+                // key不同，删除老fiber.child
                 deleteChild(returnFiber, child);
             }
             child = child.sibling;
