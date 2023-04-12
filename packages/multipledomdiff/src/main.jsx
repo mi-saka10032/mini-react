@@ -7,22 +7,24 @@ function FunctionComponent() {
     return number === 0 ? (
         <ul key="container" onClick={() => setNumber(number + 1)}>
             <li key="A">A</li>
-            <li key="B" id="B">
+            <li key="B" id="b">
                 B
             </li>
-            <li key="C" id="C">
-                C
-            </li>
+            <li key="C">C</li>
+            <li key="D">D</li>
+            <li key="E">E</li>
+            <li key="F">F</li>
         </ul>
     ) : (
         <ul key="container" onClick={() => setNumber(number + 1)}>
             <li key="A">A2</li>
-            <p key="B" id="B2">
+            <li key="C">C2</li>
+            <li key="E">E2</li>
+            <li key="B" id="b2">
                 B2
-            </p>
-            <li key="C" id="C2">
-                C2
             </li>
+            <li key="G">G</li>
+            <li key="D">D2</li>
         </ul>
     );
 }
