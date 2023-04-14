@@ -121,7 +121,9 @@ function printFinishedWork(fiber) {
     const { flags, deletions } = fiber;
     if ((flags & ChildDeletion) !== NoFlags) {
         fiber.flags &= (~ChildDeletion);
-        console.log("子节点有删除" + deletions.map(fiber => `${fiber.type}#${fiber.memoizedProps.id}`).join(","));
+        for (let i = 0; i < deletions.length; i++) {
+            console.log("子节点有删除", deletions[i].type, deletions[i].memoizedProps);
+        }
     }
     let child = fiber.child;
     while (child) {
@@ -129,7 +131,7 @@ function printFinishedWork(fiber) {
         child = child.sibling;
     }
     if (fiber.flags !== NoFlags) {
-        console.log(getFlags(fiber), getTag(fiber.tag), typeof fiber.type === 'function' ? fiber.type.name : fiber.type, fiber.memoizedProps);
+        console.log(getFlags(fiber), getTag(fiber.tag), typeof fiber.type === "function" ? fiber.type.name : fiber.type, fiber.memoizedProps);
     }
 }
 
