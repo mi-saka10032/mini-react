@@ -2,12 +2,14 @@ import { scheduleCallback } from "scheduler/index";
 import { createWorkInProgress } from "./ReactFiber";
 import { beginWork } from "./ReactFiberBeginWork";
 import { completeWork } from "./ReactFiberCompleteWork";
-import { NoFlags, MutationMask, Placement, Update, ChildDeletion } from "react-reconciler/src/ReactFiberFlags";
-import { commitMutationEffectsOnFiber } from "./ReactFiberCommitWork";
+import { NoFlags, MutationMask, Placement, Update, ChildDeletion, Passive } from "react-reconciler/src/ReactFiberFlags";
+import { commitMutationEffectsOnFiber, commitPassiveUnmountEffects, commitPassiveMountEffects } from "./ReactFiberCommitWork";
 import { finishQueueingConcurrentUpdates } from "./ReactFiberConcurrentUpdates";
 import { FunctionComponent, HostComponent, HostRoot, HostText } from "react-reconciler/src/ReactWorkTags";
 
 let workInProgress = null;
+let rootDoesHavePassiveEffect = false; // 此根节点上有没有useEffect类似的副作用
+let rootWithPendingPassiveEffects = null; // 具有useEffect副作用的根节点 FiberRootNode，根fiber.stateNode
 
 /**
  * 计划更新root
@@ -37,14 +39,35 @@ function performConcurrentWorkOnRoot(root) {
     commitRoot(root);
 }
 
+function flushPassiveEffect() {
+    if (rootWithPendingPassiveEffects !== null) {
+        const root = rootWithPendingPassiveEffects;
+        // 执行卸载副作用 destroy
+        commitPassiveUnmountEffects(root.current);
+        // 执行挂载副作用 create
+        commitPassiveMountEffects(root, root.current);
+    }
+}
+
 function commitRoot(root) {
     const { finishedWork } = root;
-    printFinishedWork(finishedWork);
+    // printFinishedWork(finishedWork);
+    if ((finishedWork.subtreeFlags & Passive) !== NoFlags || (finishedWork.flags & Passive) !== NoFlags) {
+        if (!rootDoesHavePassiveEffect) {
+            rootDoesHavePassiveEffect = true;
+            scheduleCallback(flushPassiveEffect);
+        }
+    }
     console.log("~~~~~~~~~~~~~~~~~~~");
     const subtreeHasEffects = (finishedWork.subtreeFlags && MutationMask) !== NoFlags;
     const rootHasEffect = (finishedWork.flags && MutationMask) !== NoFlags;
     if (subtreeHasEffects || rootHasEffect) {
+        // 当DOM执行变更之后
         commitMutationEffectsOnFiber(finishedWork, root);
+        if (rootDoesHavePassiveEffect) {
+            rootDoesHavePassiveEffect = false;
+            rootWithPendingPassiveEffects = root;
+        }
     }
     // 等DOM变更后，就可以把root的current指向新Fiber树
     root.current = finishedWork;

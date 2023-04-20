@@ -14,3 +14,8 @@ export function useState(reducer, initialArg, init) {
     const dispatcher = resolveDispatcher();
     return dispatcher.useState(reducer, initialArg, init);
 }
+
+export function useEffect(create, deps) {
+    const dispatcher = resolveDispatcher()
+    return dispatcher.useEffect(create, deps);
+}
