@@ -1,7 +1,7 @@
 import { appendChild, insertBefore, commitUpdate, removeChild } from "react-dom/src/client/ReactDOMHostConfig";
 import { FunctionComponent, HostComponent, HostRoot, HostText } from "react-reconciler/src/ReactWorkTags";
-import { MutationMask, Passive, Placement, Update } from "react-reconciler/src/ReactFiberFlags";
-import { Passive as HookPassive, HasEffect as HookHasEffect } from './ReactHookEffectTags'
+import { MutationMask, Passive, Placement, Update, LayoutMask } from "react-reconciler/src/ReactFiberFlags";
+import { Passive as HookPassive, HasEffect as HookHasEffect, Layout as HookLayout } from "./ReactHookEffectTags";
 
 let hostParent = null;
 
@@ -199,14 +199,16 @@ export function commitMutationEffectsOnFiber(finishedWork, root) {
     const current = finishedWork.alternate;
     const flags = finishedWork.flags;
     switch (finishedWork.tag) {
-        case HostRoot: {
+        case HostRoot:
+        case FunctionComponent:
+        case HostText: {
+            // 遍历子节点，处理子节点上的副作用
             recursivelyTraverseMutationEffects(root, finishedWork);
+            // 再处理自己身上的副作用
             commitReconciliationEffects(finishedWork);
-            break;
-        }
-        case FunctionComponent: {
-            recursivelyTraverseMutationEffects(root, finishedWork);
-            commitReconciliationEffects(finishedWork);
+            if (flags & Update) {
+                commitHookEffectListUnmount(HookHasEffect | HookLayout, finishedWork);
+            }
             break;
         }
         case HostComponent: {
@@ -228,12 +230,6 @@ export function commitMutationEffectsOnFiber(finishedWork, root) {
             }
             break;
         }
-        case HostText:
-            // 遍历子节点，处理子节点上的副作用
-            recursivelyTraverseMutationEffects(root, finishedWork);
-            // 再处理自己身上的副作用
-            commitReconciliationEffects(finishedWork);
-            break;
         default:
             break;
     }
@@ -288,7 +284,7 @@ function commitHookEffectListUnmount(flags, finishedWork) {
                 }
             }
             effect = effect.next;
-        } while(effect !== firstEffect)
+        } while (effect !== firstEffect);
     }
 }
 
@@ -339,6 +335,45 @@ function commitHookEffectListMount(flags, finishedWork) {
                 effect.destroy = create();
             }
             effect = effect.next;
-        } while(effect !== firstEffect)
+        } while (effect !== firstEffect);
     }
+}
+
+export function commitLayoutEffects(finishedWork, root) {
+    // 老的根fiber
+    const current = finishedWork.alternate;
+    commitLayoutEffectOnFiber(root, current, finishedWork);
+}
+
+function commitLayoutEffectOnFiber(finishedRoot, current, finishedWork) {
+    const flags = finishedWork.flags;
+    switch (finishedWork.tag) {
+        case HostRoot: {
+            recursivelyTraverseLayoutEffects(finishedRoot, finishedWork);
+            break;
+        }
+        case FunctionComponent: {
+            recursivelyTraverseLayoutEffects(finishedRoot, finishedWork);
+            if (flags & LayoutMask) { // 4 LayoutMask = Update = 4
+                commitHookLayoutEffects(finishedWork, HookLayout | HookHasEffect);
+            }
+            break;
+        }
+    }
+}
+
+function recursivelyTraverseLayoutEffects(root, parentFiber) {
+    if (parentFiber.subtreeFlags & LayoutMask) {
+        let child = parentFiber.child;
+        while (child !== null) {
+            const current = child.alternate;
+            commitLayoutEffectOnFiber(root, current, child);
+            child = child.sibling;
+        }
+    }
+
+}
+
+function commitHookLayoutEffects(finishedWork, hookFlags) {
+    commitHookEffectListMount(hookFlags, finishedWork);
 }

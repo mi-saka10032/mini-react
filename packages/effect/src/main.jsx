@@ -4,12 +4,12 @@ import { createRoot } from "react-dom/client";
 function FunctionComponent() {
     console.log("FunctionComponent");
     const [number, setNumber] = React.useState(1);
-    React.useEffect(() => {
-        console.log("useEffect1");
+    React.useLayoutEffect(() => {
+        console.log("useLayoutEffect1");
         return () => {
-            console.log("destroy useEffect1");
+            console.log("destroy useLayoutEffect1");
         };
-    }, []);
+    });
     React.useEffect(() => {
         console.log("useEffect2");
         return () => {
@@ -18,6 +18,7 @@ function FunctionComponent() {
     });
     React.useEffect(() => {
         console.log("useEffect3");
+        console.log(number);
         return () => {
             console.log("destroy useEffect3");
         };

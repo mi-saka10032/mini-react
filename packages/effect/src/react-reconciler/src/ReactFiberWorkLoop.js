@@ -3,7 +3,7 @@ import { createWorkInProgress } from "./ReactFiber";
 import { beginWork } from "./ReactFiberBeginWork";
 import { completeWork } from "./ReactFiberCompleteWork";
 import { NoFlags, MutationMask, Placement, Update, ChildDeletion, Passive } from "react-reconciler/src/ReactFiberFlags";
-import { commitMutationEffectsOnFiber, commitPassiveUnmountEffects, commitPassiveMountEffects } from "./ReactFiberCommitWork";
+import { commitMutationEffectsOnFiber, commitPassiveUnmountEffects, commitPassiveMountEffects, commitLayoutEffects } from "./ReactFiberCommitWork";
 import { finishQueueingConcurrentUpdates } from "./ReactFiberConcurrentUpdates";
 import { FunctionComponent, HostComponent, HostRoot, HostText } from "react-reconciler/src/ReactWorkTags";
 
@@ -64,6 +64,8 @@ function commitRoot(root) {
     if (subtreeHasEffects || rootHasEffect) {
         // 当DOM执行变更之后
         commitMutationEffectsOnFiber(finishedWork, root);
+        // UI渲染之前：同步执行layoutEffect
+        commitLayoutEffects(finishedWork, root);
         if (rootDoesHavePassiveEffect) {
             rootDoesHavePassiveEffect = false;
             rootWithPendingPassiveEffects = root;
