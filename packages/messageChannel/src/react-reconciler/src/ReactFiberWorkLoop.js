@@ -1,4 +1,8 @@
-import { scheduleCallback } from "scheduler/index";
+import {
+    scheduleCallback,
+    NormalPriority as NormalSchedulePriority,
+    shouldYield
+} from "scheduler/index";
 import { createWorkInProgress } from "./ReactFiber";
 import { beginWork } from "./ReactFiberBeginWork";
 import { completeWork } from "./ReactFiberCompleteWork";
@@ -23,7 +27,7 @@ export function scheduleUpdateOnFiber(root) {
 
 function ensureRootIsScheduled(root) {
     // 告诉浏览器要执行performConcurrentWorkOnRoot函数，参数为root
-    scheduleCallback(performConcurrentWorkOnRoot.bind(null, root));
+    scheduleCallback(NormalSchedulePriority, performConcurrentWorkOnRoot.bind(null, root));
 }
 
 /**
@@ -32,7 +36,9 @@ function ensureRootIsScheduled(root) {
  */
 function performConcurrentWorkOnRoot(root) {
     // 第一次渲染以同步的方式渲染根节点，初次渲染的时候，都是同步执行
-    renderRootSync(root);
+    // 改成并发渲染
+    // renderRootSync(root);
+    renderRootConcurrent(root);
     // 开始进入提交阶段，就是执行副作用，修改真实DOM
     const finishedWork = root.current.alternate;
     root.finishedWork = finishedWork;
@@ -55,7 +61,7 @@ function commitRoot(root) {
     if ((finishedWork.subtreeFlags & Passive) !== NoFlags || (finishedWork.flags & Passive) !== NoFlags) {
         if (!rootDoesHavePassiveEffect) {
             rootDoesHavePassiveEffect = true;
-            scheduleCallback(flushPassiveEffect);
+            scheduleCallback(NormalSchedulePriority, flushPassiveEffect);
         }
     }
     console.log("~~~~~~~~~~~~~~~~~~~");
@@ -80,6 +86,11 @@ function prepareFreshStack(root) {
     finishQueueingConcurrentUpdates();
 }
 
+function renderRootConcurrent(root) {
+    prepareFreshStack(root);
+    workLoopConcurrent();
+}
+
 function renderRootSync(root) {
     // 开始构建fiber树
     // 双缓冲技术，页面显示区域为current映射，对应真实DOM，代表当前已经渲染完成的Fiber
@@ -90,7 +101,12 @@ function renderRootSync(root) {
     workLoopSync();
 }
 
-
+function workLoopConcurrent() {
+    // 如果有下一个要构建的fiber，并且时间片没有过期
+    while (workInProgress !== null && !shouldYield()) {
+        performUnitOfWork(workInProgress);
+    }
+}
 function workLoopSync() {
     while (workInProgress !== null) {
         performUnitOfWork(workInProgress);
